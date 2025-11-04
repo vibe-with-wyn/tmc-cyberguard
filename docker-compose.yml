@@ -1,0 +1,43 @@
+version: '3.8'
+
+# PostgreSQL Database Container
+services:
+  postgres:
+    image: postgres:latest
+    container_name: tmc-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: tmc_db
+      POSTGRES_USER: tmc_user
+      POSTGRES_PASSWORD: TMC@2025
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tmc-network
+
+# pgAdmin 4 Web Interface
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: tmc-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@tmc.com
+      PGADMIN_DEFAULT_PASSWORD: admin@TMC2025
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - tmc-network
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+networks:
+  tmc-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pgadmin_data:
