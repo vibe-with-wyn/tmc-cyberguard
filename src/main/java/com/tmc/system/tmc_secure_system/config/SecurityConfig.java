@@ -28,6 +28,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, RoleBasedAuthSuccessHandler successHandler) throws Exception {
         http
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+            
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/health", "/error", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/login", "/403").permitAll()

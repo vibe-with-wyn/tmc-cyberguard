@@ -2,14 +2,15 @@ package com.tmc.system.tmc_secure_system.controller;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 
-@RestController
+@Controller
 public class AdminController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/api/admin/home")
-    public String home() {
-        return "Admin Dashboard (placeholder)";
+    public String home(Model model) {
+        return "dashboard/admin";
     }
 }
