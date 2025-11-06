@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import com.tmc.system.tmc_secure_system.security.LoggingAccessDeniedHandler;
 import com.tmc.system.tmc_secure_system.security.RoleBasedAuthSuccessHandler;
 
 
@@ -25,7 +26,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, RoleBasedAuthSuccessHandler successHandler) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           RoleBasedAuthSuccessHandler successHandler,
+                                           LoggingAccessDeniedHandler deniedHandler) throws Exception {
         http
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .authorizeHttpRequests(auth -> auth
@@ -51,7 +54,7 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             )
-            .exceptionHandling(ex -> ex.accessDeniedPage("/403"))
+            .exceptionHandling(ex -> ex.accessDeniedHandler(deniedHandler))
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
         return http.build();
