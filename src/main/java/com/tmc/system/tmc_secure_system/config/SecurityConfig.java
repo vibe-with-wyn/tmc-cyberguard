@@ -28,7 +28,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, RoleBasedAuthSuccessHandler successHandler) throws Exception {
         http
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-            
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/health", "/error", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/login", "/403").permitAll()
@@ -45,7 +44,13 @@ public class SecurityConfig {
                 .failureUrl("/login?error")
                 .permitAll()
             )
-            .logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login?logout").permitAll())
+            .logout(logout -> logout
+                .logoutUrl("/logout")                    // POST endpoint
+                .logoutSuccessUrl("/login?logout")       // redirect after logout
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll()
+            )
             .exceptionHandling(ex -> ex.accessDeniedPage("/403"))
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
