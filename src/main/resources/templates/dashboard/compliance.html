@@ -11,13 +11,152 @@
   <div class="container">
     <a class="navbar-brand" href="#">TMC CyberGuard</a>
     <div class="d-flex">
-      <a class="btn btn-outline-light btn-sm" href="/logout">Logout</a>
+      <form th:action="@{/logout}" method="post" class="ms-2">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
+      </form>
     </div>
   </div>
 </nav>
+
 <div class="container py-4">
   <h3>Compliance Officer</h3>
-  <p>Audit and export logs UI will appear here.</p>
+  <p class="text-muted">Review and export security logs.</p>
+
+  <!-- Filters -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-header">Filters</div>
+    <div class="card-body">
+      <form class="row g-2" method="get" th:action="@{/api/compliance/home}">
+        <div class="col-md-4">
+          <label class="form-label">User</label>
+          <input class="form-control" name="user" th:value="${userFilter}" placeholder="username or email"/>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Incident Severity</label>
+          <select class="form-select" name="severity">
+            <option th:selected="${severityFilter == null}" value="">Any</option>
+            <option th:each="s : ${severities}" th:value="${s}" th:text="${s}"
+                    th:selected="${severityFilter == s}"></option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">From</label>
+          <input class="form-control" type="date" name="from" th:value="${fromFilter}"/>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">To</label>
+          <input class="form-control" type="date" name="to" th:value="${toFilter}"/>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button class="btn btn-outline-primary w-100" type="submit">Apply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Incident Logs -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Incident Logs</span>
+      <a class="btn btn-sm btn-outline-secondary"
+         th:href="@{/api/compliance/export/incidents.csv(user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">
+        Export CSV
+      </a>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead>
+          <tr>
+            <th style="width:170px">Time</th>
+            <th style="width:140px">User</th>
+            <th style="width:160px">Type</th>
+            <th style="width:120px">Severity</th>
+            <th>Description</th>
+            <th style="width:140px">IP</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="l : ${incidents.content}">
+            <td th:text="${#temporals.format(l.eventTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+            <td th:text="${l.username}"></td>
+            <td th:text="${l.eventType}"></td>
+            <td th:text="${l.severity}"></td>
+            <td th:text="${l.description}"></td>
+            <td th:text="${l.ipAddress}"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <nav th:if="${incidents.totalPages > 1}" aria-label="Incident pagination">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/api/compliance/home(page=${incidents.number-1}, size=${incidents.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Prev</a>
+          </li>
+          <li class="page-item disabled">
+            <span class="page-link" th:text="${incidents.number + 1} + ' / ' + ${incidents.totalPages}"></span>
+          </li>
+          <li class="page-item" th:classappend="${incidents.last} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/api/compliance/home(page=${incidents.number+1}, size=${incidents.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Audit Logs -->
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Audit Logs</span>
+      <a class="btn btn-sm btn-outline-secondary"
+         th:href="@{/api/compliance/export/audits.csv(user=${userFilter}, from=${fromFilter}, to=${toFilter})}">
+        Export CSV
+      </a>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+          <thead>
+          <tr>
+            <th style="width:170px">Time</th>
+            <th style="width:140px">User</th>
+            <th style="width:180px">Action</th>
+            <th>Description</th>
+            <th style="width:140px">IP</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="l : ${audits.content}">
+            <td th:text="${#temporals.format(l.eventTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+            <td th:text="${l.username}"></td>
+            <td th:text="${l.actionType}"></td>
+            <td th:text="${l.description}"></td>
+            <td th:text="${l.ipAddress}"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <nav th:if="${audits.totalPages > 1}" aria-label="Audit pagination">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" th:classappend="${audits.first} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/api/compliance/home(page=${audits.number-1}, size=${audits.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Prev</a>
+          </li>
+          <li class="page-item disabled">
+            <span class="page-link" th:text="${audits.number + 1} + ' / ' + ${audits.totalPages}"></span>
+          </li>
+          <li class="page-item" th:classappend="${audits.last} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{/api/compliance/home(page=${audits.number+1}, size=${audits.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
 </div>
 </body>
 </html>

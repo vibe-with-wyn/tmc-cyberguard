@@ -9,5 +9,6 @@ public enum AuditAction {
     VALIDATION_FAILED,
     FILE_DOWNLOAD,
     DECRYPTION_SUCCESS,
-    ADMIN_ACTION
+    ADMIN_ACTION,
+    LOGS_EXPORTED           // compliance export action
 }
