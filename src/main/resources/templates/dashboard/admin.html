@@ -25,91 +25,198 @@
   <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
   <div class="row g-4">
+    <!-- User Management -->
     <div class="col-lg-6">
       <div class="card shadow-sm">
-        <div class="card-header">Create Assignment</div>
+        <div class="card-header">User Management</div>
         <div class="card-body">
-          <form method="post" th:action="@{/api/admin/assign}">
+          <form class="row g-2" method="post" th:action="@{/api/admin/users/create}">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-            <div class="mb-3">
-              <label class="form-label">Encrypted File</label>
-              <select class="form-select" name="fileId" required>
-                <option th:each="f : ${files}" th:value="${f.id}"
-                        th:text="${'#' + f.id + ' - ' + f.filename}">file</option>
+            <div class="col-md-4">
+              <label class="form-label">Username</label>
+              <input class="form-control" name="username" required/>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" name="email" required/>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Role</label>
+              <select class="form-select" name="role">
+                <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
               </select>
             </div>
+            <div class="col-md-8">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-control" name="password" minlength="8" required/>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button class="btn btn-primary w-100" type="submit">Create</button>
+            </div>
+          </form>
 
-            <div class="mb-3">
+          <hr/>
+
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="u : ${users}">
+                <td th:text="${u.id}"></td>
+                <td th:text="${u.username}"></td>
+                <td th:text="${u.email}"></td>
+                <td th:text="${u.role}"></td>
+                <td>
+                  <span th:text="${u.status}"
+                        th:classappend="${u.status.name()=='LOCKED'} ? 'badge bg-danger' : 'badge bg-success'"></span>
+                </td>
+                <td>
+                  <div class="d-flex gap-2">
+                    <form method="post" th:action="@{/api/admin/users/reset-password}" class="d-flex gap-1">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input type="hidden" name="userId" th:value="${u.id}"/>
+                      <input type="password" name="newPassword" placeholder="New password" class="form-control form-control-sm" minlength="8" required/>
+                      <button class="btn btn-outline-secondary btn-sm" type="submit">Reset</button>
+                    </form>
+                    <form method="post" th:action="@{${u.status.name()=='LOCKED' ? '/api/admin/users/unlock' : '/api/admin/users/lock'}}">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                      <input type="hidden" name="userId" th:value="${u.id}"/>
+                      <button class="btn btn-sm" th:classappend="${u.status.name()=='LOCKED'} ? 'btn-success' : 'btn-warning'"
+                              th:text="${u.status.name()=='LOCKED' ? 'Unlock' : 'Lock'}"></button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assign Files -->
+    <div class="col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header">Assign Files to Analysts</div>
+        <div class="card-body">
+          <form method="post" th:action="@{/api/admin/assignments/create}" class="row g-2">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="col-md-6">
+              <label class="form-label">File</label>
+              <select class="form-select" name="fileId" required>
+                <option th:each="f : ${files}" th:value="${f.id}" th:text="${f.filename + ' (ID ' + f.id + ')'}"></option>
+              </select>
+            </div>
+            <div class="col-md-6">
               <label class="form-label">Analyst</label>
               <select class="form-select" name="analystId" required>
-                <option th:each="a : ${analysts}" th:value="${a.id}"
-                        th:text="${a.username + ' (' + a.email + ')'}">analyst</option>
+                <option th:each="a : ${analysts}" th:value="${a.id}" th:text="${a.username + ' (' + a.email + ')'}"></option>
               </select>
             </div>
-
-            <div class="mb-3">
-              <label class="form-label d-block">Permissions</label>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="permissions" value="VIEW_METADATA" id="p1" checked>
-                <label class="form-check-label" for="p1">View metadata</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="permissions" value="DECRYPT" id="p2" checked>
-                <label class="form-check-label" for="p2">Decrypt</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="permissions" value="DOWNLOAD" id="p3">
-                <label class="form-check-label" for="p3">Download</label>
-              </div>
-              <div class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" name="permissions" value="EXPORT" id="p4">
-                <label class="form-check-label" for="p4">Export</label>
-              </div>
+            <div class="col-md-8">
+              <label class="form-label">Permissions</label>
+              <select class="form-select" name="permissions" multiple size="4">
+                <option value="VIEW_METADATA">VIEW_METADATA</option>
+                <option value="DECRYPT">DECRYPT</option>
+                <option value="DOWNLOAD">DOWNLOAD</option>
+                <option value="EXPORT">EXPORT</option>
+              </select>
+              <small class="text-muted">Hold Ctrl to select multiple.</small>
             </div>
-
-            <div class="mb-3">
-              <label class="form-label">Expires At (optional)</label>
-              <input type="datetime-local" name="expiresAt" class="form-control">
+            <div class="col-md-4">
+              <label class="form-label">Expires At</label>
+              <input class="form-control" type="datetime-local" name="expiresAt"/>
             </div>
-
-            <button class="btn btn-primary" type="submit">Assign</button>
+            <div class="col-12">
+              <button class="btn btn-primary" type="submit">Assign</button>
+            </div>
           </form>
         </div>
       </div>
     </div>
 
-    <div class="col-lg-6">
+    <!-- Logs -->
+    <div class="col-12">
       <div class="card shadow-sm">
-        <div class="card-header">Active Assignments</div>
-        <div class="card-body table-responsive">
-          <table class="table table-sm align-middle">
-            <thead>
-            <tr>
-              <th>ID</th>
-              <th>File</th>
-              <th>Analyst</th>
-              <th>Assigned By</th>
-              <th>Assigned At</th>
-              <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="fa : ${activeAssignments}">
-              <td th:text="${fa.id}">1</td>
-              <td th:text="${'#' + fa.file.id + ' ' + fa.file.filename}">file</td>
-              <td th:text="${fa.analyst.username}">analyst</td>
-              <td th:text="${fa.assignedBy.username}">admin</td>
-              <td th:text="${#temporals.format(fa.assignedAt, 'yyyy-MM-dd HH:mm')}">time</td>
-              <td>
-                <form method="post" th:action="@{'/api/admin/assignments/' + ${fa.id} + '/revoke'}">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                  <button class="btn btn-outline-danger btn-sm" type="submit">Revoke</button>
-                </form>
-              </td>
-            </tr>
-            </tbody>
-          </table>
+        <div class="card-header">Audit/Incident Logs</div>
+        <div class="card-body">
+          <form class="row g-2 mb-3" method="get" th:action="@{/api/admin/home}">
+            <div class="col-md-3">
+              <label class="form-label">User</label>
+              <input class="form-control" name="user" th:value="${userFilter}"/>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Severity</label>
+              <select class="form-select" name="severity">
+                <option th:selected="${severityFilter == null}" value="">Any</option>
+                <option th:each="s : ${severities}" th:value="${s}" th:text="${s}"
+                        th:selected="${severityFilter == s}"></option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">From</label>
+              <input class="form-control" type="date" name="from" th:value="${fromFilter}"/>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">To</label>
+              <input class="form-control" type="date" name="to" th:value="${toFilter}"/>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+              <button class="btn btn-outline-primary w-100" type="submit">Filter</button>
+            </div>
+          </form>
+
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+              <tr>
+                <th>Time</th>
+                <th>User</th>
+                <th>Type</th>
+                <th>Severity</th>
+                <th>Message</th>
+                <th>IP</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr th:each="l : ${logs.content}"
+                  th:classappend="${l.severity.name()=='CRITICAL'} ? 'table-danger' : (${l.severity.name()=='HIGH'} ? 'table-warning' : '')">
+                <td th:text="${#temporals.format(l.eventTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                <td th:text="${l.username}"></td>
+                <td th:text="${l.eventType}"></td>
+                <td><span class="badge" th:classappend="
+                     ${l.severity.name()=='CRITICAL'} ? 'text-bg-danger' : 
+                     (${l.severity.name()=='HIGH'} ? 'text-bg-warning' : 'text-bg-secondary')"
+                    th:text="${l.severity}"></span></td>
+                <td th:text="${l.description}"></td>
+                <td th:text="${l.ipAddress}"></td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <nav th:if="${logs.totalPages > 1}" aria-label="Log pagination">
+            <ul class="pagination pagination-sm">
+              <li class="page-item" th:classappend="${logs.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/api/admin/home(page=${logs.number-1}, size=${logs.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Prev</a>
+              </li>
+              <li class="page-item disabled">
+                <span class="page-link" th:text="${logs.number + 1} + ' / ' + ${logs.totalPages}"></span>
+              </li>
+              <li class="page-item" th:classappend="${logs.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/api/admin/home(page=${logs.number+1}, size=${logs.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Next</a>
+              </li>
+            </ul>
+          </nav>
         </div>
       </div>
     </div>
