@@ -16,8 +16,8 @@ public class DataInitializer {
     @Bean
     CommandLineRunner seedUsers(UserRepository users, PasswordEncoder encoder) {
         return args -> {
-            createIfMissing(users, encoder, "admin", "admin@tmc.com", "Admin@123!", RoleName.ADMIN);
-            createIfMissing(users, encoder, "ot", "ot@tmc.com", "Ot@12345", RoleName.OT_OPERATOR);
+            createIfMissing(users, encoder, "admin", "admin@tmc.com", "Admin@123", RoleName.ADMIN);
+            createIfMissing(users, encoder, "operations", "operationtech@tmc.com", "OT@12345", RoleName.OT_OPERATOR);
             createIfMissing(users, encoder, "analyst", "analyst@tmc.com", "Analyst@123", RoleName.IT_ANALYST);
             createIfMissing(users, encoder, "compliance", "compliance@tmc.com", "Compliance@123", RoleName.COMPLIANCE_OFFICER);
             createIfMissing(users, encoder, "ciso", "ciso@tmc.com", "Ciso@12345", RoleName.CISO);
