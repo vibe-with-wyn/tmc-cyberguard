@@ -5,16 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Access Denied</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="/css/app.css" rel="stylesheet"/>
 </head>
-<body class="bg-light">
-  <div class="container py-5">
+<body class="d-flex align-items-center" style="min-height:100vh;">
+  <div class="container">
     <div class="row justify-content-center">
       <div class="col-md-6">
-        <div class="alert alert-warning shadow-sm">
-          <h5 class="alert-heading">Access denied</h5>
-          <p>You do not have permission to access this resource.</p>
-          <a class="btn btn-secondary" href="/login">Back to Dashboard</a>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="mb-2">Access denied</h5>
+            <p class="text-muted mb-3">You do not have permission to access this resource.</p>
+            <a class="btn btn-secondary" href="/login">Go to Login</a>
+          </div>
         </div>
+        <div class="small text-muted text-center mt-3">TMC CyberGuard</div>
       </div>
     </div>
   </div>
