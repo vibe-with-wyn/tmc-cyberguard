@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -44,24 +43,26 @@ public class ComplianceController {
 
     @GetMapping("/api/compliance/home")
     public String home(Model model,
-                       @RequestParam(value = "page", defaultValue = "0") int page,
-                       @RequestParam(value = "size", defaultValue = "10") int size,
+                       @RequestParam(value = "incPage", defaultValue = "0") int incPage,
+                       @RequestParam(value = "incSize", defaultValue = "10") int incSize,
+                       @RequestParam(value = "audPage", defaultValue = "0") int audPage,
+                       @RequestParam(value = "audSize", defaultValue = "10") int audSize,
                        @RequestParam(value = "user", required = false) String userFilter,
                        @RequestParam(value = "severity", required = false) IncidentSeverity severity,
                        @RequestParam(value = "from", required = false) String fromDate,
                        @RequestParam(value = "to", required = false) String toDate) {
 
-        Pageable pageable = PageRequest.of(page, size);
         LocalDateTime from = DateRanges.parseStart(fromDate);
         LocalDateTime to = DateRanges.parseEnd(toDate);
-
         Long actorId = UserLookups.resolveActorId(userRepo, userFilter);
 
         Specification<IncidentLog> incidentSpec = LogSpecifications.forIncidents(actorId, severity, from, to);
         Specification<AuditLog> auditSpec = LogSpecifications.forAudits(actorId, from, to);
 
-        Page<IncidentLog> incidents = incidentRepo.findAll(incidentSpec, pageable);
-        Page<AuditLog> audits = auditRepo.findAll(auditSpec, pageable);
+        Page<IncidentLog> incidents = incidentRepo.findAll(incidentSpec,
+                PageRequest.of(incPage, incSize));
+        Page<AuditLog> audits = auditRepo.findAll(auditSpec,
+                PageRequest.of(audPage, audSize));
 
         model.addAttribute("incidents", incidents);
         model.addAttribute("audits", audits);
@@ -71,6 +72,8 @@ public class ComplianceController {
         model.addAttribute("severityFilter", severity);
         model.addAttribute("fromFilter", fromDate);
         model.addAttribute("toFilter", toDate);
+        model.addAttribute("incSize", incSize);
+        model.addAttribute("audSize", audSize);
 
         return "dashboard/compliance";
     }

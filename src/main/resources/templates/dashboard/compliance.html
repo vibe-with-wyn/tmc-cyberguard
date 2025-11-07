@@ -83,7 +83,13 @@
             <td th:text="${@uiDates.format(l.eventTime)}"></td>
             <td th:text="${l.username}"></td>
             <td th:text="${l.eventType}"></td>
-            <td th:text="${l.severity}"></td>
+            <td>
+              <span class="badge"
+                    th:classappend="${l.severity.name()=='CRITICAL'} ? 'text-bg-danger' :
+                                    (${l.severity.name()=='HIGH'} ? 'text-bg-warning' :
+                                     (${l.severity.name()=='MEDIUM'} ? 'text-bg-secondary' : 'text-bg-light'))"
+                    th:text="${l.severity}"></span>
+            </td>
             <td th:text="${l.description}"></td>
             <td th:text="${l.ipAddress}"></td>
           </tr>
@@ -94,14 +100,22 @@
         <ul class="pagination pagination-sm mb-0">
           <li class="page-item" th:classappend="${incidents.first} ? 'disabled'">
             <a class="page-link"
-               th:href="@{/api/compliance/home(page=${incidents.number-1}, size=${incidents.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Prev</a>
+               th:href="@{/api/compliance/home(
+                 incPage=${incidents.number-1}, incSize=${incidents.size},
+                 audPage=${audits.number}, audSize=${audits.size},
+                 user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter}
+               )}">Prev</a>
           </li>
           <li class="page-item disabled">
             <span class="page-link" th:text="${incidents.number + 1} + ' / ' + ${incidents.totalPages}"></span>
           </li>
           <li class="page-item" th:classappend="${incidents.last} ? 'disabled'">
             <a class="page-link"
-               th:href="@{/api/compliance/home(page=${incidents.number+1}, size=${incidents.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Next</a>
+               th:href="@{/api/compliance/home(
+                 incPage=${incidents.number+1}, incSize=${incidents.size},
+                 audPage=${audits.number}, audSize=${audits.size},
+                 user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter}
+               )}">Next</a>
           </li>
         </ul>
       </nav>
@@ -144,14 +158,22 @@
         <ul class="pagination pagination-sm mb-0">
           <li class="page-item" th:classappend="${audits.first} ? 'disabled'">
             <a class="page-link"
-               th:href="@{/api/compliance/home(page=${audits.number-1}, size=${audits.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Prev</a>
+               th:href="@{/api/compliance/home(
+                 incPage=${incidents.number}, incSize=${incidents.size},
+                 audPage=${audits.number-1}, audSize=${audits.size},
+                 user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter}
+               )}">Prev</a>
           </li>
           <li class="page-item disabled">
             <span class="page-link" th:text="${audits.number + 1} + ' / ' + ${audits.totalPages}"></span>
           </li>
           <li class="page-item" th:classappend="${audits.last} ? 'disabled'">
             <a class="page-link"
-               th:href="@{/api/compliance/home(page=${audits.number+1}, size=${audits.size}, user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter})}">Next</a>
+               th:href="@{/api/compliance/home(
+                 incPage=${incidents.number}, incSize=${incidents.size},
+                 audPage=${audits.number+1}, audSize=${audits.size},
+                 user=${userFilter}, severity=${severityFilter}, from=${fromFilter}, to=${toFilter}
+               )}">Next</a>
           </li>
         </ul>
       </nav>

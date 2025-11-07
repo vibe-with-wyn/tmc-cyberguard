@@ -83,7 +83,14 @@
             <td th:text="${@uiDates.format(l.eventTime)}"></td>
             <td th:text="${l.username}"></td>
             <td th:text="${l.eventType}"></td>
-            <td th:text="${l.severity}"></td>
+            <!-- Severity with badge styling (consistent with Admin/Compliance) -->
+            <td>
+              <span class="badge"
+                    th:classappend="${l.severity.name()=='CRITICAL'} ? 'text-bg-danger' :
+                                    (${l.severity.name()=='HIGH'} ? 'text-bg-warning' :
+                                     (${l.severity.name()=='MEDIUM'} ? 'text-bg-secondary' : 'text-bg-light'))"
+                    th:text="${l.severity}"></span>
+            </td>
             <td th:text="${l.description}"></td>
             <td th:text="${l.ipAddress}"></td>
           </tr>
