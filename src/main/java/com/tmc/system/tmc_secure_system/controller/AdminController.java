@@ -2,9 +2,7 @@ package com.tmc.system.tmc_secure_system.controller;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.time.format.DateTimeParseException;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,11 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.tmc.system.tmc_secure_system.entity.EncryptedFile;
-import com.tmc.system.tmc_secure_system.entity.FileAssignment;
 import com.tmc.system.tmc_secure_system.entity.IncidentLog;
 import com.tmc.system.tmc_secure_system.entity.User;
-import com.tmc.system.tmc_secure_system.entity.enums.AssignmentPermission;
 import com.tmc.system.tmc_secure_system.entity.enums.AssignmentStatus;
 import com.tmc.system.tmc_secure_system.entity.enums.IncidentSeverity;
 import com.tmc.system.tmc_secure_system.entity.enums.RoleName;
@@ -184,35 +179,30 @@ public class AdminController {
                                    RedirectAttributes ra,
                                    @RequestParam Long fileId,
                                    @RequestParam Long analystId,
-                                   @RequestParam(required = false) Set<AssignmentPermission> permissions,
-                                   @RequestParam(required = false) String expiresAt
-    ) {
-        EncryptedFile f = fileRepo.findById(fileId).orElse(null);
-        User analyst = userRepo.findById(analystId).orElse(null);
-        if (f == null || analyst == null) {
-            ra.addFlashAttribute("error", "Invalid file or analyst.");
-            return "redirect:/api/admin/home";
+                                   @RequestParam(required = false) String expiresAt) {
+        try {
+            var assignedBy = userRepo.findByUsernameIgnoreCaseOrEmailIgnoreCase(
+                    principal.getName(), principal.getName()).orElseThrow();
+
+            // datetime-local uses ISO_LOCAL_DATE_TIME, e.g. 2025-11-07T13:45
+            LocalDateTime exp = null;
+            if (expiresAt != null && !expiresAt.isBlank()) {
+                try {
+                    exp = LocalDateTime.parse(expiresAt.trim());
+                } catch (DateTimeParseException ex) {
+                    ra.addFlashAttribute("error", "Invalid expiry date format.");
+                    return "redirect:/api/admin/home";
+                }
+            }
+
+            assignmentService.assignFile(fileId, analystId, assignedBy.getId(), exp);
+            ra.addFlashAttribute("success", "Assignment created (DECRYPT permission).");
+            // optional audit
+            logAdminAction(principal, request, IncidentSeverity.LOW,
+                    "Assigned file " + fileId + " to analyst " + analystId + " (DECRYPT)", null);
+        } catch (Exception ex) {
+            ra.addFlashAttribute("error", "Create assignment failed: " + ex.getMessage());
         }
-        User admin = userRepo.findByUsernameIgnoreCaseOrEmailIgnoreCase(principal.getName(), principal.getName())
-                .orElse(null);
-
-        FileAssignment fa = new FileAssignment();
-        fa.setFile(f);
-        fa.setAnalyst(analyst);
-        fa.setAssignedBy(admin);
-        fa.setPermissions(permissions == null ? EnumSet.noneOf(AssignmentPermission.class) : permissions);
-        fa.setStatus(AssignmentStatus.ACTIVE);
-        if (expiresAt != null && !expiresAt.isBlank()) {
-            fa.setExpiresAt(LocalDateTime.parse(expiresAt));
-        }
-        assignmentRepo.save(fa);
-
-        logAdminAction(principal, request, IncidentSeverity.MEDIUM,
-                String.format("Assigned fileId=%d to analystId=%d perms=%s", fileId, analystId,
-                        fa.getPermissions().stream().map(Enum::name).collect(Collectors.joining(","))),
-                null);
-
-        ra.addFlashAttribute("success", "Assignment created.");
         return "redirect:/api/admin/home";
     }
 

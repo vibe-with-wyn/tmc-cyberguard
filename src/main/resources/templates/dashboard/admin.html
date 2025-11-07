@@ -139,14 +139,9 @@
           </select>
         </div>
         <div class="col-md-8">
-          <label class="form-label">Permissions</label>
-          <select class="form-select" name="permissions" multiple size="4">
-            <option value="VIEW_METADATA">VIEW_METADATA</option>
-            <option value="DECRYPT">DECRYPT</option>
-            <option value="DOWNLOAD">DOWNLOAD</option>
-            <option value="EXPORT">EXPORT</option>
-          </select>
-          <small class="text-muted">Hold Ctrl to select multiple.</small>
+          <label class="form-label">Permission</label>
+          <input class="form-control" value="DECRYPT (default)" disabled />
+          <small class="text-muted">Analysts can only decrypt & download.</small>
         </div>
         <div class="col-md-4">
           <label class="form-label">Expires At</label>

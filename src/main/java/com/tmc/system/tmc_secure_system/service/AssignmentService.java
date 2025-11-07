@@ -2,7 +2,6 @@ package com.tmc.system.tmc_secure_system.service;
 
 import java.time.LocalDateTime;
 import java.util.EnumSet;
-import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +27,7 @@ public class AssignmentService {
 
     @Transactional
     public FileAssignment assignFile(Long fileId, Long analystId, Long assignedById,
-                                     Set<AssignmentPermission> permissions, LocalDateTime expiresAt) {
+                                     LocalDateTime expiresAt) {
         if (assignmentRepo.existsByFile_IdAndAnalyst_IdAndStatus(fileId, analystId, AssignmentStatus.ACTIVE)) {
             throw new IllegalStateException("Active assignment already exists for this file and analyst");
         }
@@ -43,9 +42,10 @@ public class AssignmentService {
         fa.setAssignedAt(LocalDateTime.now());
         fa.setExpiresAt(expiresAt);
         fa.setStatus(AssignmentStatus.ACTIVE);
-        fa.setPermissions(permissions == null || permissions.isEmpty()
-                ? EnumSet.of(AssignmentPermission.VIEW_METADATA)
-                : EnumSet.copyOf(permissions));
+
+        // Only permission used by Analyst UI
+        fa.setPermissions(EnumSet.of(AssignmentPermission.DECRYPT));
+
         return assignmentRepo.save(fa);
     }
 
