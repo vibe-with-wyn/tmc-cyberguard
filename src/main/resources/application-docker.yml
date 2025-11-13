@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update     # OK for a school demo; for production use Flyway
+    show-sql: false
+  flyway:
+    enabled: false
+
+server:
+  port: 8080
+
+app:
+  crypto:
+    aes-gcm:
+      base64-key: ${APP_CRYPTO_AES_KEY_BASE64}
+      key-id: ${APP_CRYPTO_AES_KEY_ID}
